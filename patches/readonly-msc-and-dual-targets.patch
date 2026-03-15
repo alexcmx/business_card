@@ -1,0 +1,38 @@
+diff --git a/Class/MSC/Src/usbd_msc_scsi.c b/Class/MSC/Src/usbd_msc_scsi.c
+index 78032c7..a6bb369 100644
+--- a/Class/MSC/Src/usbd_msc_scsi.c
++++ b/Class/MSC/Src/usbd_msc_scsi.c
+@@ -341,6 +341,12 @@ static int8_t SCSI_ModeSense6(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *p
+     len--;
+     hmsc->bot_data[len] = MSC_Mode_Sense6_data[len];
+   }
++
++  if (((USBD_StorageTypeDef *)pdev->pUserData)->IsWriteProtected(lun) != 0)
++  {
++    hmsc->bot_data[2] |= 0x80U;
++  }
++
+   return 0;
+ }
+ 
+@@ -364,6 +370,11 @@ static int8_t SCSI_ModeSense10(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *
+     hmsc->bot_data[len] = MSC_Mode_Sense10_data[len];
+   }
+ 
++  if (((USBD_StorageTypeDef *)pdev->pUserData)->IsWriteProtected(lun) != 0)
++  {
++    hmsc->bot_data[3] |= 0x80U;
++  }
++
+   return 0;
+ }
+ 
+@@ -530,7 +541,7 @@ static int8_t SCSI_Write10(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *para
+     /* Check If media is write-protected */
+     if (((USBD_StorageTypeDef *)pdev->pUserData)->IsWriteProtected(lun) != 0)
+     {
+-      SCSI_SenseCode(pdev, lun, NOT_READY, WRITE_PROTECTED);
++      SCSI_SenseCode(pdev, lun, DATA_PROTECT, WRITE_PROTECTED);
+       return -1;
+     }
+ 
